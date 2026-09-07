@@ -486,3 +486,61 @@ input:disabled {
     text-align: right;
   }
 }
+
+/* 접이식 인원 변경 영역 */
+.member-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fafbfc;
+  color: var(--text);
+  text-align: left;
+}
+
+.member-toggle:hover {
+  background: #f4f6f8;
+  border-color: #c8d0dc;
+}
+
+.member-toggle-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 700;
+}
+
+.member-toggle-arrow {
+  width: 1em;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.member-toggle-status {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.member-toggle-status.has-change {
+  color: var(--accent-dark);
+  font-weight: 700;
+}
+
+.member-toggle + .member-panel {
+  margin-top: 10px;
+}
+
+@media (max-width: 520px) {
+  .member-toggle {
+    align-items: flex-start;
+  }
+
+  .member-toggle-status {
+    text-align: right;
+  }
+}

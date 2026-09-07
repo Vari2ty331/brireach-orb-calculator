@@ -21,7 +21,8 @@ function makeRun(number) {
       { checked: false, note: "" }
     ],
     exclusions: [],
-    additions: []
+    additions: [],
+    memberPanelOpen: false
   };
 }
 
@@ -202,6 +203,11 @@ function renderRuns() {
         .map(id => getMember(id))
         .filter(Boolean);
 
+      const changeParts = [];
+      if (run.exclusions.length > 0) changeParts.push(`제외 ${run.exclusions.length}명`);
+      if (run.additions.length > 0) changeParts.push(`추가 ${run.additions.length}명`);
+      const changeStatus = changeParts.length ? changeParts.join(" · ") : "변동 없음";
+
       membershipHtml = `
         <div class="member-change">
           <div class="member-summary">
@@ -210,69 +216,85 @@ function renderRuns() {
             <strong>현재 ${activeMembers.length}명</strong>
           </div>
 
-          <div class="member-panel">
-            <div>
-              <h3>제외 인원</h3>
-              <div class="member-list">
-                ${excludable.map(id => {
-                  const member = getMember(id);
-                  return `
-                    <label class="member-check">
-                      <input
-                        type="checkbox"
-                        data-action="exclude"
-                        data-run-index="${runIndex}"
-                        data-member-id="${id}"
-                        ${run.exclusions.includes(id) ? "checked" : ""}
-                      >
+          <button
+            type="button"
+            class="member-toggle"
+            data-action="toggle-member-panel"
+            data-run-index="${runIndex}"
+            aria-expanded="${run.memberPanelOpen ? "true" : "false"}"
+          >
+            <span class="member-toggle-title">
+              <span class="member-toggle-arrow" aria-hidden="true">${run.memberPanelOpen ? "▼" : "▶"}</span>
+              인원 변경
+            </span>
+            <span class="member-toggle-status ${changeParts.length ? "has-change" : ""}">${changeStatus}</span>
+          </button>
+
+          ${run.memberPanelOpen ? `
+            <div class="member-panel">
+              <div>
+                <h3>제외 인원</h3>
+                <div class="member-list">
+                  ${excludable.map(id => {
+                    const member = getMember(id);
+                    return `
+                      <label class="member-check">
+                        <input
+                          type="checkbox"
+                          data-action="exclude"
+                          data-run-index="${runIndex}"
+                          data-member-id="${id}"
+                          ${run.exclusions.includes(id) ? "checked" : ""}
+                        >
+                        ${member.label}
+                      </label>
+                    `;
+                  }).join("") || '<span class="hint">제외 가능한 인원이 없습니다.</span>'}
+                </div>
+              </div>
+
+              <div>
+                <h3>추가 / 복귀 인원</h3>
+                <div class="addition-list">
+                  ${currentAdditions.map(member => `
+                    <span class="person-chip">
                       ${member.label}
-                    </label>
-                  `;
-                }).join("") || '<span class="hint">제외 가능한 인원이 없습니다.</span>'}
-              </div>
-            </div>
-
-            <div>
-              <h3>추가 / 복귀 인원</h3>
-              <div class="addition-list">
-                ${currentAdditions.map(member => `
-                  <span class="person-chip">
-                    ${member.label}
-                    <button
-                      type="button"
-                      class="chip-remove"
-                      data-action="remove-addition"
-                      data-run-index="${runIndex}"
-                      data-member-id="${member.id}"
-                      aria-label="${member.label} 취소"
-                    >×</button>
-                  </span>
-                `).join("")}
-              </div>
-
-              ${knownInactive.length ? `
-                <div class="rejoin-row">
-                  <span class="hint">이전에 빠진 인원 복귀:</span>
-                  ${knownInactive.map(member => `
-                    <button
-                      type="button"
-                      class="small-button"
-                      data-action="rejoin"
-                      data-run-index="${runIndex}"
-                      data-member-id="${member.id}"
-                    >${member.label}</button>
+                      <button
+                        type="button"
+                        class="chip-remove"
+                        data-action="remove-addition"
+                        data-run-index="${runIndex}"
+                        data-member-id="${member.id}"
+                        aria-label="${member.label} 취소"
+                      >×</button>
+                    </span>
                   `).join("")}
                 </div>
-              ` : ""}
 
-              <button
-                type="button"
-                class="secondary-button"
-                data-action="add-member"
-                data-run-index="${runIndex}"
-              >+ 새 인원 1명</button>
+                ${knownInactive.length ? `
+                  <div class="rejoin-row">
+                    <span class="hint">이전에 빠진 인원 복귀:</span>
+                    ${knownInactive.map(member => `
+                      <button
+                        type="button"
+                        class="small-button"
+                        data-action="rejoin"
+                        data-run-index="${runIndex}"
+                        data-member-id="${member.id}"
+                      >${member.label}</button>
+                    `).join("")}
+                  </div>
+                ` : ""}
+
+                <button
+                  type="button"
+                  class="secondary-button"
+                  data-action="add-member"
+                  data-run-index="${runIndex}"
+                >+ 새 인원 1명</button>
+              </div>
             </div>
-          </div>
+          ` : ""}
         </div>
       `;
     }
@@ -620,7 +642,10 @@ runsContainer.addEventListener("click", event => {
   const action = button.dataset.action;
   const runIndex = Number(button.dataset.runIndex);
 
-  if (action === "add-member") {
+  if (action === "toggle-member-panel") {
+    state.runs[runIndex].memberPanelOpen = !state.runs[runIndex].memberPanelOpen;
+    renderRuns();
+  } else if (action === "add-member") {
     addNewMember(runIndex);
   } else if (action === "rejoin") {
     rejoinMember(runIndex, button.dataset.memberId);
