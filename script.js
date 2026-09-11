@@ -460,7 +460,7 @@ function renderResults(shares, histories) {
   const groups = new Map();
 
   state.members
-    .filter(member => !member.isBuyer)
+    .filter(member => !(state.guest && member.isBuyer))
     .forEach(member => {
       const history = histories.get(member.id) || [];
       if (history.length === 0) return;
@@ -491,12 +491,6 @@ function renderResults(shares, histories) {
     </div>
   `).join("");
 
-  const buyerExact = shares.get("buyer") || 0;
-  const buyerPayable = Math.floor(buyerExact / 10000) * 10000;
-  const buyerHtml = state.guest
-    ? `<div class="buyer-note">구슬 구매자(본인): 손님 설정으로 분배 제외</div>`
-    : `<div class="buyer-note">구슬 구매자(본인) 몫: <strong>${formatKoreanGold(buyerPayable)}</strong> · 실제 송금 불필요</div>`;
-
   const incidents = [];
   state.runs.forEach((run, runIndex) => {
     run.incidents.forEach((incident, gateIndex) => {
@@ -525,7 +519,6 @@ function renderResults(shares, histories) {
 
   resultsContainer.innerHTML = `
     ${groupHtml || '<p class="hint">지급할 파티원이 없습니다.</p>'}
-    ${buyerHtml}
     ${incidentHtml}
   `;
 
