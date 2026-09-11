@@ -357,7 +357,7 @@ function renderRuns() {
       <div class="run-header">
         <h2>${run.number}릴</h2>
         <div class="run-status">
-          ${activeMembers.length ? `참여 ${activeMembers.length}명 · 정산 ${eligibleCount}명` : "인원을 입력해주세요"}
+          ${activeMembers.length ? `참여 ${eligibleCount}명` : "인원을 입력해주세요"}
         </div>
       </div>
 
